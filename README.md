@@ -27,7 +27,10 @@ const editor = grapesjs.init({
 	container: '#gjs',
   height: '100%',
   fromElement: true,
-  storageManager: false,
+  storageManager: {
+    id: 'some-id',//gjs-
+    type: 'indexeddb',
+  },
   plugins: ['grapesjs-indexeddb-ui'],
 });
 //Add Panel Buttons
@@ -124,6 +127,10 @@ Directly in the browser
 <script type="text/javascript">
   var editor = grapesjs.init({
       container: '#gjs',
+      storageManager: {
+        id: 'some-id',//gjs-
+        type: 'indexeddb',
+      },
       // ...
       plugins: ['grapesjs-indexeddb-ui'],
       pluginsOpts: {
@@ -162,6 +169,10 @@ import 'grapesjs-indexeddb-ui/dist/grapesjs-indexeddb-ui.min.css';
 
 const editor = grapesjs.init({
   container : '#gjs',
+  storageManager: {
+    id: 'some-id',//gjs-
+    type: 'indexeddb',
+  },
   // ...
   plugins: [plugin],
   pluginsOpts: {

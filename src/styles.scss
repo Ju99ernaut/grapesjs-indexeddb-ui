@@ -88,6 +88,7 @@
 .gjs-templates-card-2 {
     display: flex;
     flex-wrap: wrap;
+    min-height: 200px;
     max-height: calc(100vh - 195px);
     overflow-y: auto;
     margin-top: 1px;

@@ -7,6 +7,7 @@
   <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
   <link rel="stylesheet" href="dist/grapesjs-indexeddb-ui.min.css">
   <script src="https://unpkg.com/grapesjs"></script>
+  <script src="dist/grapesjs-indexeddb-ui.min.js"></script>
   <style>
     body,
     html {
@@ -42,7 +43,14 @@
       plugins: ['grapesjs-indexeddb-ui'],
       pluginsOpts: {
         'grapesjs-indexeddb-ui': {
-          /* Test here your options  */
+          addOnUpgrade: [{
+            "id": "Blank",
+            "template": true,
+            "gjs-html": "",
+            "gjs-css": "",
+            "gjs-components": "",
+            "gjs-style": ""
+          }]
         }
       }
     });

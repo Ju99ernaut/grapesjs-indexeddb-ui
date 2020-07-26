@@ -42,10 +42,6 @@
     margin-bottom: 10px;
 }
 
-/*.gjs-templates-cont p {
-
-}*/
-
 .gjs-templates-card {
     width: 32%;
     height: 0;
@@ -81,7 +77,7 @@
 
     &-active {
         box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-        border: 2px solid rgba(255, 255, 255, 0.22);
+        border: 2px solid rgba(100, 160, 255, 0.22);
     }
 }
 
@@ -95,6 +91,7 @@
     margin-bottom: 25px;
     width: 100%;
     border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.35);
     background-color: rgba(0, 0, 0, 0.25);
     /*box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);*/
 

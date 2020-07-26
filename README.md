@@ -146,13 +146,15 @@ Directly in the browser
 
           // Load on schema upgrade
           addOnUpgrade: [{
-            "id": "Blank",
-            "template": true,
-            "gjs-html": "",
-            "gjs-css": "",
-            "gjs-components": "",
-            "gjs-style": ""
-          },//...]
+              "id": "Blank",
+              "template": true,
+              "gjs-html": "",
+              "gjs-css": "",
+              "gjs-components": "",
+              "gjs-style": ""
+            },
+            //...
+          ]
          }
       }
   });

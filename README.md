@@ -43,28 +43,28 @@ panelOpts.get('buttons').add([{
     title: 'Open Templates'
   },
   className: 'fa fa-paperclip',
-  command: 'open-templates',
+  command: 'open-templates',//Open modal with templates which can be used when creating new page
   id: 'open-templates'
 }, {
   attributes: {
     title: 'Open Pages'
   },
   className: 'fa fa-file-o',
-  command: 'open-pages',
+  command: 'open-pages',//Open modal listing your pages 
   id: 'open-pages'
 }, {
   attributes: {
     title: 'Save As Template'
   },
   className: 'fa fa-archive',
-  command: 'save-as-template',
+  command: 'save-as-template',//Save page as template
   id: 'save-as-template'
 }, {
   attributes: {
     title: 'Delete from IDB'
   },
   className: 'fa fa-trash-o',
-  command: 'delete-from-idb',
+  command: 'delete-from-idb',//Delete open page or template
   id: 'delete-from-idb'
 }]);
 ```

@@ -50,6 +50,7 @@
     margin-top: 8.2px;
     margin-bottom: 8.2px;
     border-radius: 5px;
+    cursor: pointer;
     border: 1px solid rgba(0, 0, 0, 0.24);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
@@ -58,10 +59,11 @@
     & svg.template-preview {
         margin: 2px;
         background-color: white;
+        border: 1px solid white;
         border-radius: 2px;
     }
 
-    & div {
+    & div.label {
         border-top: 1px solid rgba(0, 0, 0, 0.2);
         width: 100%;
         font-size: 0.95rem;
@@ -77,7 +79,7 @@
 
     &-active {
         box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-        border: 2px solid rgba(100, 160, 255, 0.22);
+        border: 2px solid rgba(100, 160, 255, 0.5);
     }
 }
 

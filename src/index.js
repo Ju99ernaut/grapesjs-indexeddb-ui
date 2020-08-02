@@ -205,14 +205,14 @@ export default (editor, opts = {}) => {
     let thumbnails = '';
     data.forEach(el => {
       let dataSvg = `<svg xmlns="http://www.w3.org/2000/svg" class="template-preview" viewBox="0 0 1300 1100" width="99%" height="220">
-        <foreignObject width="100%" height="100%">
+        <foreignObject width="100%" height="100%" style="pointer-events:none">
           <div xmlns="http://www.w3.org/1999/xhtml" ${el[getId()+'html'] ? '' : 'padding-top:100%'}">
-          ${el[getId()+'html'] + '<style>' + el[getId()+'css'] + '</style>'}
+          ${el[getId()+'html'] + '<style scoped>' + el[getId()+'css'] + '</style>'}
           </div>
         </foreignObject>
       </svg>`;
       let thumbnail = `${dataSvg}
-      <div>${el.id}</div>`;
+      <div class="label">${el.id}</div>`;
       templatesRender ? el.template && (() => thumbnails += thumbs(el.id, thumbnail))() :
         !el.template && (() => thumbnails += thumbs(el.id, thumbnail))();
     });

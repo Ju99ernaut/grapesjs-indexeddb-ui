@@ -4,6 +4,8 @@ UI helpers for IndexedDB Storage
 
 >Requires GrapesJS v0.14.15 or higher
 
+>Templates in this screenshot can be found in `templates.json`
+
 <p align="center">
   <img src="templates.png" alt="templates.png">
 </p>
@@ -28,7 +30,7 @@ const editor = grapesjs.init({
   height: '100%',
   fromElement: true,
   storageManager: {
-    id: 'some-id',//gjs-
+    id: 'gjs-',
     type: 'indexeddb',
   },
   plugins: ['grapesjs-indexeddb-ui'],
@@ -128,7 +130,7 @@ Directly in the browser
   var editor = grapesjs.init({
       container: '#gjs',
       storageManager: {
-        id: 'some-id',//gjs-
+        id: 'gjs-',
         type: 'indexeddb',
       },
       // ...
@@ -152,7 +154,7 @@ Directly in the browser
               "gjs-css": "",
               "gjs-components": "",
               "gjs-style": ""
-            },
+            },// Note prefix should be the same as storageManager id in this case 'gjs-'
             //...
           ]
          }
@@ -172,7 +174,7 @@ import 'grapesjs-indexeddb-ui/dist/grapesjs-indexeddb-ui.min.css';
 const editor = grapesjs.init({
   container : '#gjs',
   storageManager: {
-    id: 'some-id',//gjs-
+    id: 'gjs-',
     type: 'indexeddb',
   },
   // ...

@@ -273,6 +273,7 @@ export default (editor, opts = {}) => {
             page && editor.load(res => {
               editor.setComponents(res.components ? JSON.parse(res.components) : res.html);
               editor.setStyle(res.styles ? JSON.parse(res.styles) : res.css);
+              thumbnail = res.thumbnail || '';
               id = page;
               mdl.close();
             });
@@ -283,6 +284,7 @@ export default (editor, opts = {}) => {
             editor.load(res => {
               editor.setComponents(res.components ? JSON.parse(res.components) : res.html);
               editor.setStyle(res.styles ? JSON.parse(res.styles) : res.css);
+              thumbnail = res.thumbnail || '';
               mdl.close();
             });
           });
@@ -320,6 +322,7 @@ export default (editor, opts = {}) => {
               editor.load(res => {
                 editor.setComponents(res.components ? JSON.parse(res.components) : res.html);
                 editor.setStyle(res.styles ? JSON.parse(res.styles) : res.css);
+                thumbnail = res.thumbnail || '';
                 mdl.close();
               });
             })
@@ -373,7 +376,7 @@ export default (editor, opts = {}) => {
     }
   });
 
-  editor.on('storage:load', res => thumbnail = res.thumbnail);
+  editor.on('storage:load', res => thumbnail = res.thumbnail || '');
 
   editor.on('load', () => {
     // Create blank template if requested and none exists

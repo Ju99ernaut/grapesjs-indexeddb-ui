@@ -37,8 +37,6 @@
       storageManager: {
         id: 'gjs-',
         type: 'indexeddb',
-        autoload: 0,
-        autosave: 1
       },
       plugins: ['grapesjs-indexeddb-ui'],
       pluginsOpts: {
@@ -86,6 +84,13 @@
       className: 'fa fa-trash-o',
       command: 'delete-from-idb',
       id: 'delete-from-idb'
+    }, {
+      attributes: {
+        title: 'Take Screenshot'
+      },
+      className: 'fa fa-camera',
+      command: 'take-screenshot',
+      id: 'take-screenshot'
     }]);
   </script>
 </body>

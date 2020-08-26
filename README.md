@@ -68,6 +68,13 @@ panelOpts.get('buttons').add([{
   className: 'fa fa-trash-o',
   command: 'delete-from-idb',//Delete open page or template
   id: 'delete-from-idb'
+}, {
+  attributes: {
+    title: 'Take Screenshot'
+  },
+  className: 'fa fa-camera',
+  command: 'take-screenshot',//Take an image of the canvas
+  id: 'take-screenshot'
 }]);
 ```
 
@@ -90,7 +97,14 @@ body, html {
     * `open-pages`
     * `save-as-template`
     * `delete-from-idb`
+    * `take-screenshot`
+    * `get-current-id`
 
+```js
+editor.runCommand('get-current-id') // Will return name/id of current page
+```
+
+> This plugin uses the [`<foreignObject>`](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/foreignObject) [SGV](https://developer.mozilla.org/en-US/docs/Web/SVG) element to simulate thumbnails which works well for projects which do not use any external stylesheets such as bootstrap. If your pages rely on external stylesheets you can store image thumbnails with your pages via the `take-screenshot` command which uses the [dom-to-image](https://github.com/tsayen/dom-to-image) library to generate thumbnails. You can also access this library through `editor.domtoimage`.
 
 
 ## Options
@@ -101,7 +115,12 @@ body, html {
 | `objectStoreName` | Collection name | `templates` |
 | `indexeddbVersion` | DB version | `4` |
 | `addOnUpgrade` | Add on DB schema upgrade | `0` |
-
+| `defaultPage` | Name/ID of the page that is loaded by default on editor restart | `Default` |
+| `defaultTemplate` | Name/ID of the template that is selected by default | `Blank` |
+| `onDelete` | When template or page is deleted | `onDelete: res => console.log('Deleted:', res)` |
+| `onDeleteError` | When error onDelete | `err => console.log(err)` |
+| `onScreenshotError` | Error taking screenshot | `err => console.log(err)` |
+| `quality` | Quality of screenshot image from 0 to 1, more quality increases the image size | `0.01` |
 
 
 ## Download
@@ -148,10 +167,10 @@ Directly in the browser
 
           // Load on schema upgrade
           addOnUpgrade: [{
-              "id": "Blank",
+              "id": "Template 1",
               "template": true,
-              "gjs-html": "",
-              "gjs-css": "",
+              "gjs-html": "html...",
+              "gjs-css": "css...",
               "gjs-components": "",
               "gjs-style": ""
             },// Note prefix should be the same as storageManager id in this case 'gjs-'

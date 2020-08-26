@@ -117,6 +117,7 @@ editor.runCommand('get-current-id') // Will return name/id of current page
 | `addOnUpgrade` | Add on DB schema upgrade | `0` |
 | `defaultPage` | Name/ID of the page that is loaded by default on editor restart | `Default` |
 | `defaultTemplate` | Name/ID of the template that is selected by default | `Blank` |
+| `blankTemplate` | Blank page added to templates, pass falsy expression to prevent loading | `{id: 'Blank',template: true,'gjs-html': '','gjs-css': ''}` |
 | `onDelete` | When template or page is deleted | `onDelete: res => console.log('Deleted:', res)` |
 | `onDeleteError` | When error onDelete | `err => console.log(err)` |
 | `onScreenshotError` | Error taking screenshot | `err => console.log(err)` |

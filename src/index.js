@@ -39,7 +39,7 @@ export default (editor, opts = {}) => {
       onScreenshotError: err => console.log(err),
 
       // Quality of screenshot image from 0 to 1, more quality increases the image size
-      quality: .01
+      quality: .005
 
     },
     ...opts
@@ -244,7 +244,7 @@ export default (editor, opts = {}) => {
           </div>
         </foreignObject>
       </svg>`;
-      const thumbnailEl = el.thumbnail ? `<div style="display:flex;height: 220px">
+      const thumbnailEl = el.thumbnail ? `<div style="display:flex;height:219px;overflow:hidden">
           <img class="template-preview" src="${el.thumbnail}" alt="${el.id}">
         </div>
         <div class="label">${el.id}</div>` :
@@ -363,6 +363,8 @@ export default (editor, opts = {}) => {
       const el = editor.getWrapper().getEl();
       getJpeg(el, {
         quality: options.quality,
+        height: 1000,
+        'cacheBust': true,
         style: {
           'background-color': el.style.backgroundColor || 'white',
         },

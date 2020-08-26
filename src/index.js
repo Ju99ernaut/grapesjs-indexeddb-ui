@@ -1,3 +1,5 @@
+import domtoimage from 'dom-to-image';
+
 export default (editor, opts = {}) => {
   const options = {
     ...{
@@ -11,18 +13,44 @@ export default (editor, opts = {}) => {
       indexeddbVersion: 4,
 
       // Load on schema upgrade
-      addOnUpgrade: 0
+      addOnUpgrade: 0,
+
+      // Default page id
+      defaultPage: 'Default',
+
+      // Default template id
+      defaultTemplate: 'Blank',
+
+      // blank Template
+      blankTemplate: {
+        id: 'Blank',
+        template: true,
+        'gjs-html': '',
+        'gjs-css': '',
+      },
+
+      // When template or page is deleted
+      onDelete: res => console.log('Deleted:', res),
+
+      // When error onDelete
+      onDeleteError: err => console.log(err),
+
+      // On screenshot error
+      onScreenshotError: err => console.log(err),
+
+      // Quality of screenshot image from 0 to 1, more quality increases the image size
+      quality: .01
 
     },
     ...opts
   };
 
-  //todo update for prefix use
   let db;
-  let id = "Default"; //?Keep track of open page
+  let id = options.defaultPage || "Default"; //?Keep track of open page
   let page = ""; //?Keep track of page names
-  let templateName = "Blank";
+  let templateName = options.defaultTemplate || "Blank";
   let template = false; //*Keep track on whether to save as template
+  let thumbnail = ''; // Image from screenshot
   const $ = document.querySelectorAll.bind(document);
   const cm = editor.Commands;
   const mdl = editor.Modal;
@@ -32,6 +60,14 @@ export default (editor, opts = {}) => {
 
   const getId = () => sm.getConfig().id || 'gjs-';
   const getCurrentId = () => id;
+
+  const getJpeg = (node, opts = {}, clb, clbErr) => {
+    domtoimage.toJpeg(node, opts)
+      .then(dataUrl => clb && clb(dataUrl))
+      .catch(err => clbErr && clbErr(err))
+  };
+
+  editor.domtoimage = domtoimage;
 
   // Functions for DB retrieving
   const getDb = () => db;
@@ -116,10 +152,6 @@ export default (editor, opts = {}) => {
         const request = objs.getAll();
         request.onerror = clbErr;
         request.onsuccess = () => {
-          //const {
-          //  id,
-          //  ...data
-          //} = request.result || {};
           clb(request.result);
         };
       });
@@ -128,8 +160,9 @@ export default (editor, opts = {}) => {
     store(data, clb, clbErr) {
       getAsyncObjectStore(objs => {
         const request = objs.put({
-          id: id,
-          template: template,
+          id,
+          template,
+          thumbnail,
           ...data
         });
         request.onerror = clbErr;
@@ -202,21 +235,24 @@ export default (editor, opts = {}) => {
   };
 
   const render = (data, templatesRender = true) => {
-    let thumbnails = '';
+    let thumbnailsEl = '';
     data.forEach(el => {
-      let dataSvg = `<svg xmlns="http://www.w3.org/2000/svg" class="template-preview" viewBox="0 0 1300 1100" width="99%" height="220">
+      const dataSvg = `<svg xmlns="http://www.w3.org/2000/svg" class="template-preview" viewBox="0 0 1300 1100" width="99%" height="220">
         <foreignObject width="100%" height="100%" style="pointer-events:none">
           <div xmlns="http://www.w3.org/1999/xhtml" ${el[getId()+'html'] ? '' : 'padding-top:100%'}">
           ${el[getId()+'html'] + '<style scoped>' + el[getId()+'css'] + '</style>'}
           </div>
         </foreignObject>
       </svg>`;
-      let thumbnail = `${dataSvg}
-      <div class="label">${el.id}</div>`;
-      templatesRender ? el.template && (() => thumbnails += thumbs(el.id, thumbnail))() :
-        !el.template && (() => thumbnails += thumbs(el.id, thumbnail))();
+      const thumbnailEl = el.thumbnail ? `<div style="display:flex;height: 220px">
+          <img class="template-preview" src="${el.thumbnail}" alt="${el.id}">
+        </div>
+        <div class="label">${el.id}</div>` :
+        `${dataSvg}<div class="label">${el.id}</div>`;
+      templatesRender ? el.template && (() => thumbnailsEl += thumbs(el.id, thumbnailEl))() :
+        !el.template && (() => thumbnailsEl += thumbs(el.id, thumbnailEl))();
     });
-    return templatesRender ? templates(thumbCont(thumbnails)) : pages(thumbCont(thumbnails))
+    return templatesRender ? templates(thumbCont(thumbnailsEl)) : pages(thumbCont(thumbnailsEl))
   };
 
   cm.add('open-templates', {
@@ -226,6 +262,7 @@ export default (editor, opts = {}) => {
       mdlDialog.classList.add(mdlClass);
       sender && sender.set && sender.set('active');
       mdl.setTitle('<div style="font-size: 1rem">Create Page</div>');
+      mdl.setContent('<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>');
       editor.Storage.get('indexeddb').loadAll(res => {
           mdl.setContent(render(res));
           $('.gjs-templates-card').forEach(elm => elm.dataset.id == templateName && elm.classList.add('gjs-templates-card-active'));
@@ -272,6 +309,7 @@ export default (editor, opts = {}) => {
       mdlDialog.classList.add(mdlClass);
       sender && sender.set && sender && sender.set('active');
       mdl.setTitle('<div style="font-size: 1rem">Select Page</div>');
+      mdl.setContent('<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>');
       editor.Storage.get('indexeddb').loadAll(res => {
           mdl.setContent(render(res, false));
           $('.gjs-templates-card').forEach(elm => elm.dataset.id == id && elm.classList.add('gjs-templates-card-active'));
@@ -305,8 +343,46 @@ export default (editor, opts = {}) => {
 
   cm.add('delete-from-idb', {
     run(editor, sender) {
-      editor.Storage.get('indexeddb').delete(res => console.log(res), err => console.log(err));
+      editor.Storage.get('indexeddb').delete(res => options.onDelete(res), err => options.onDeleteError(err));
       editor.Commands.run('open-pages');
     }
   });
+
+  cm.add('take-screenshot', {
+    run(editor, sender) {
+      // take scrrenshot
+      const clb = dataUrl => {
+        // set to current object
+        thumbnail = dataUrl;
+        editor.store();
+      };
+      const clbErr = err => options.onScreenshotError(err);
+      const el = editor.getWrapper().getEl();
+      getJpeg(el, {
+        quality: options.quality,
+        style: {
+          'background-color': el.style.backgroundColor || 'white',
+        },
+      }, clb, clbErr);
+    }
+  });
+
+  cm.add('get-current-id', {
+    run(editor, sender) {
+      return getCurrentId()
+    }
+  });
+
+  editor.on('storage:load', res => thumbnail = res.thumbnail);
+
+  editor.on('load', () => {
+    // Create blank template if requested and none exists
+    options.blankTemplate && getAsyncObjectStore(objs => {
+      const request = objs.get(options.blankTemplate.id);
+      //request.onerror = clbErr;
+      request.onsuccess = () => {
+        !request.result && objs.put(options.blankTemplate);
+      };
+    });
+  })
 };

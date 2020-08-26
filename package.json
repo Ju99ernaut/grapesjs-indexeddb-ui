@@ -25,5 +25,8 @@
     "node-sass": "^4.14.1"
   },
   "author": "Brendon Ngirazi",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "dom-to-image": "^2.6.0"
+  }
 }

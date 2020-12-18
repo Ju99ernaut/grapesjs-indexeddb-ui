@@ -4,11 +4,14 @@ UI helpers for IndexedDB Storage
 
 >Requires GrapesJS v0.14.15 or higher
 
->Templates in this screenshot can be found in `templates.json`
+>Some templates can be found in `templates.json`
 
+### Templates
 <p align="center">
   <img src="templates.png" alt="templates.png">
 </p>
+
+### Pages
 <p align="center">
   <img src="pages.png" alt="pages.png">
 </p>

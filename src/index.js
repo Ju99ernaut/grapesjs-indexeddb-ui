@@ -39,8 +39,16 @@ export default (editor, opts = {}) => {
             onScreenshotError: err => console.log(err),
 
             // Quality of screenshot image from 0 to 1, more quality increases the image size
-            quality: .005
+            quality: .005,
 
+            // Content for templates modal title
+            templatesMdlTitle: '<div style="font-size: 1rem">Create Page</div>',
+
+            // Content for pages modal title
+            pagesMdlTitle: '<div style="font-size: 1rem">Select Page</div>',
+
+            // Element shown during loading
+            loaderEl: '<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>'
         },
         ...opts
     };
@@ -53,6 +61,7 @@ export default (editor, opts = {}) => {
     let template = false; //*Keep track on whether to save as template
     let thumbnail = ''; // Image from screenshot
     const $ = editor.$;
+    const pfx = editor.getConfig().stylePrefix
     const cm = editor.Commands;
     const mdl = editor.Modal;
     const sm = editor.StorageManager;
@@ -191,51 +200,47 @@ export default (editor, opts = {}) => {
 
 
     const thumbs = (idx, thumb) => {
-        return `<div class="gjs-templates-card" data-idx="${idx}">
+        return `<div class="${pfx}templates-card" data-idx="${idx}">
                 ${thumb}
             </div>`;
     };
     const thumbCont = thumbs => {
-        return `<div class="gjs-templates-card-2">
+        return `<div class="${pfx}templates-card-2">
                 ${thumbs}
             </div>`;
     };
     const templates = thumbCont => {
-        return `<div id="templates" class="gjs-templates gjs-one-bg gjs-two-color">
-            <div class="gjs-templates-overlay"></div>
-            <div class="gjs-templates-cont">
-                <div class="gjs-fonts">
-                <label style="font-size: 0.9rem;font-family: Arial, Helvetica, sans-serif; display: block;" for="page-name">Name</label>
-                <div style="width: 50%; display: inline-block;" class="gjs-field">
-                    <input style="border: 1px solid rgba(0, 0, 0, 0.2);
-                    border-radius: 5px;
-                    font-family: Arial, Helvetica, sans-serif;" type="text" name="pageName" id="page-name">
+        return `<div id="templates" class="${pfx}templates ${pfx}one-bg ${pfx}two-color">
+                <div class="${pfx}templates-overlay"></div>
+                <div class="${pfx}templates-cont">
+                    <div class="${pfx}fonts">
+                        <label class="${pfx}field-label" for="page-name">Name</label>
+                        <div class="${pfx}field">
+                            <input type="text" name="pageName" id="page-name">
+                        </div>
+                        <span>
+                            <button class="${pfx}btn-prim ${pfx}btn-wide" id="template-edit">
+                                Edit Selected
+                            </button>
+                        </span>
+                        <span>
+                            <button class="${pfx}btn-prim ${pfx}btn-wide" id="page-create">
+                                Create
+                            </button>
+                        </span>
+                    </div>
+                    <div class="${pfx}templates-header2">
+                        Templates
+                    </div>
+                    ${thumbCont}
                 </div>
-                <span style="display: inline-block;">
-                    <button class="gjs-btn-prim" style="padding: 10px;
-                    border-radius: 3px;
-                    font-size: 0.9rem;
-                    margin-left: 220px;" id="template-edit">Edit Selected</button>
-                </span>
-                <span style="display: inline-block;">
-                    <button class="gjs-btn-prim" style="padding: 10px;
-                    border-radius: 3px;
-                    font-size: 0.9rem;
-                    margin-left: 10px;" id="page-create">Create</button>
-                </span>
-                </div>
-                <div class="gjs-templates-header2">
-                Templates
-                </div>
-                ${thumbCont}
-            </div>
             </div>`;
     };
     const pages = thumbCont => {
-        return `<div id="pages" class="gjs-templates gjs-one-bg gjs-two-color">
-            <div class="gjs-templates-overlay"></div>
-            <div class="gjs-templates-cont">
-                <div class="gjs-templates-header2">
+        return `<div id="pages" class="${pfx}templates ${pfx}one-bg ${pfx}two-color">
+            <div class="${pfx}templates-overlay"></div>
+            <div class="${pfx}templates-cont">
+                <div class="${pfx}templates-header2">
                 Your Pages
                 </div>
                     ${thumbCont}
@@ -253,11 +258,19 @@ export default (editor, opts = {}) => {
                     </div>
                     </foreignObject>
                 </svg>`;
-            const thumbnailEl = el.thumbnail ? `<div style="display:flex;height:219px;overflow:hidden">
+            const thumbnailEl = el.thumbnail ? `<div class="${pfx}thumbnail-cont">
                     <img class="template-preview" src="${el.thumbnail}" alt="${el.id}">
                 </div>
-                <div class="label">${el.id}</div>` :
-                `${dataSvg}<div class="label">${el.id}</div>`;
+                <div class="label">
+                    ${el.id}
+                    <i class="${pfx}caret-icon fa fa-i-cursor"></i>
+                    <i class="${pfx}caret-icon fa fa-trash-o"></i>
+                </div>` :
+                `${dataSvg}<div class="label">
+                    ${el.id} 
+                    <i class="${pfx}caret-icon fa fa-i-cursor"></i>
+                    <i class="${pfx}caret-icon fa fa-trash-o"></i>
+                </div>`;
             templatesRender ? el.template && (() => thumbnailsEl += thumbs(el.idx, thumbnailEl))() :
                 !el.template && (() => thumbnailsEl += thumbs(el.idx, thumbnailEl))();
         });
@@ -266,15 +279,15 @@ export default (editor, opts = {}) => {
 
     cm.add('open-templates', {
         run(editor, sender) {
-            const mdlClass = 'gjs-mdl-dialog-tml';
-            const mdlDialog = document.querySelector('.gjs-mdl-dialog');
+            const mdlClass = `${pfx}mdl-dialog-tml`;
+            const mdlDialog = document.querySelector(`.${pfx}mdl-dialog`);
             mdlDialog.classList.add(mdlClass);
             sender && sender.set && sender.set('active');
-            mdl.setTitle('<div style="font-size: 1rem">Create Page</div>');
-            mdl.setContent('<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>');
+            mdl.setTitle(options.templatesMdlTitle);
+            mdl.setContent(options.loaderEl);
             editor.Storage.get('indexeddb').loadAll(res => {
                     mdl.setContent(render(res));
-                    $('.gjs-templates-card').each((i, elm) => elm.dataset.idx == templateIdx && elm.classList.add('gjs-templates-card-active'));
+                    $(`.${pfx}templates-card`).each((i, elm) => elm.dataset.idx == templateIdx && elm.classList.add(`${pfx}templates-card-active`));
                     $('#page-name').on('keyup', e => page = e.currentTarget.value)
                     $('#page-create').on('click', e => {
                         idx = templateIdx;
@@ -298,18 +311,16 @@ export default (editor, opts = {}) => {
                             mdl.close();
                         });
                     });
-                    $('.gjs-templates-card').each((i, el) => {
-                        el.addEventListener('click', e => {
-                            templateIdx = e.currentTarget.dataset.idx;
-                            $('.gjs-templates-card').each((i, elm) => elm.classList.remove('gjs-templates-card-active'));
-                            el.classList.add('gjs-templates-card-active');
-                        });
+                    $(`.${pfx}templates-card`).on('click', e => {
+                        templateIdx = e.currentTarget.dataset.idx;
+                        $(`.${pfx}templates-card`).each((i, elm) => elm.classList.remove(`${pfx}templates-card-active`));
+                        el.classList.add(`${pfx}templates-card-active`);
                     });
                 },
                 err => console.log("Error", err));
             mdl.open();
             mdl.getModel().once('change:open', () => {
-                document.querySelector('.gjs-mdl-collector').innerHTML = "";
+                document.querySelector(`.${pfx}mdl-collector`).innerHTML = "";
                 mdlDialog.classList.remove(mdlClass);
             });
         }
@@ -317,32 +328,30 @@ export default (editor, opts = {}) => {
 
     cm.add('open-pages', {
         run(editor, sender) {
-            const mdlClass = 'gjs-mdl-dialog-tml';
-            const mdlDialog = document.querySelector('.gjs-mdl-dialog');
+            const mdlClass = `${pfx}mdl-dialog-tml`;
+            const mdlDialog = document.querySelector(`.${pfx}mdl-dialog`);
             mdlDialog.classList.add(mdlClass);
             sender && sender.set && sender && sender.set('active');
-            mdl.setTitle('<div style="font-size: 1rem">Select Page</div>');
-            mdl.setContent('<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>');
+            mdl.setTitle(options.pagesMdlTitle);
+            mdl.setContent(options.loaderEl);
             editor.Storage.get('indexeddb').loadAll(res => {
                     mdl.setContent(render(res, false));
-                    $('.gjs-templates-card').each((i, elm) => elm.dataset.idx == idx && elm.classList.add('gjs-templates-card-active'));
-                    $('.gjs-templates-card').each((i, el) => {
-                        el.addEventListener('click', e => {
-                            idx = e.currentTarget.dataset.idx;
-                            template = false;
-                            editor.load(res => {
-                                editor.setComponents(res.components ? JSON.parse(res.components) : res.html);
-                                editor.setStyle(res.styles ? JSON.parse(res.styles) : res.css);
-                                thumbnail = res.thumbnail || '';
-                                mdl.close();
-                            });
-                        })
+                    $(`.${pfx}templates-card`).each((i, elm) => elm.dataset.idx == idx && elm.classList.add(`${pfx}templates-card-active`));
+                    $(`.${pfx}templates-card`).on('click', e => {
+                        idx = e.currentTarget.dataset.idx;
+                        template = false;
+                        editor.load(res => {
+                            editor.setComponents(res.components ? JSON.parse(res.components) : res.html);
+                            editor.setStyle(res.styles ? JSON.parse(res.styles) : res.css);
+                            thumbnail = res.thumbnail || '';
+                            mdl.close();
+                        });
                     });
                 },
                 err => console.log("Error", err));
             mdl.open();
             mdl.getModel().once('change:open', () => {
-                document.querySelector('.gjs-mdl-collector').innerHTML = "";
+                document.querySelector(`.${pfx}mdl-collector`).innerHTML = "";
                 mdlDialog.classList.remove(mdlClass);
             });
         }
@@ -396,6 +405,7 @@ export default (editor, opts = {}) => {
             const def = objs.index('id').get(options.defaultPage);
             def.onsuccess = () => {
                 def.result && (idx = def.result.idx);
+                editor.load();
             };
             const temp = objs.index('id').get(options.defaultTemplate);
             temp.onsuccess = () => {

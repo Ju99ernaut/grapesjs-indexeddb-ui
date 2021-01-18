@@ -1,32 +1,32 @@
 {
-  "name": "grapesjs-indexeddb-ui",
-  "version": "1.0.6",
-  "description": "Grapesjs Indexeddb Ui",
-  "main": "dist/grapesjs-indexeddb-ui.min.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Ju99ernaut/grapesjs-indexeddb-ui.git"
-  },
-  "scripts": {
-    "start": "grapesjs-cli serve",
-    "build": "grapesjs-cli build",
-    "build:css": "node-sass src/styles.scss dist/grapesjs-indexeddb-ui.min.css --output-style compressed",
-    "bump": "npm version patch -m 'Bump v%s'"
-  },
-  "keywords": [
-    "grapesjs",
-    "plugin",
-    "indexeddb",
-    "storage",
-    "ui"
-  ],
-  "devDependencies": {
-    "grapesjs-cli": "^1.0.12",
-    "node-sass": "^4.14.1"
-  },
-  "author": "Brendon Ngirazi",
-  "license": "MIT",
-  "dependencies": {
-    "dom-to-image": "^2.6.0"
-  }
+    "name": "grapesjs-indexeddb-ui",
+    "version": "2.0.0",
+    "description": "Grapesjs Indexeddb Ui",
+    "main": "dist/grapesjs-indexeddb-ui.min.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Ju99ernaut/grapesjs-indexeddb-ui.git"
+    },
+    "scripts": {
+        "start": "grapesjs-cli serve",
+        "build": "grapesjs-cli build",
+        "build:css": "node-sass src/styles.scss dist/grapesjs-indexeddb-ui.min.css --output-style compressed",
+        "bump": "npm version patch -m 'Bump v%s'"
+    },
+    "keywords": [
+        "grapesjs",
+        "plugin",
+        "indexeddb",
+        "storage",
+        "ui"
+    ],
+    "devDependencies": {
+        "grapesjs-cli": "^1.0.12",
+        "node-sass": "^4.14.1"
+    },
+    "author": "Brendon Ngirazi",
+    "license": "MIT",
+    "dependencies": {
+        "dom-to-image": "^2.6.0"
+    }
 }

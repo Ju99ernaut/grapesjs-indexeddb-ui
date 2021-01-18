@@ -249,6 +249,7 @@ export default (editor, opts = {}) => {
     };
 
     const render = (data, templatesRender = true) => {
+        //TODO refactor render function
         let thumbnailsEl = '';
         data.forEach(el => {
             const dataSvg = `<svg xmlns="http://www.w3.org/2000/svg" class="template-preview" viewBox="0 0 1300 1100" width="99%" height="220">
@@ -279,6 +280,58 @@ export default (editor, opts = {}) => {
         return templatesRender ? templates(thumbCont(thumbnailsEl)) : pages(thumbCont(thumbnailsEl))
     };
 
+    const createPage = () => {
+        idx = templateIdx;
+        template = false;
+        page && editor.load(res => {
+            editor.setComponents(res.components ? JSON.parse(res.components) : res.html);
+            editor.setStyle(res.styles ? JSON.parse(res.styles) : res.css);
+            thumbnail = res.thumbnail || '';
+            id = page;
+            idx = uuidv4();
+            mdl.close();
+        });
+    };
+
+    const openTemplate = () => {
+        idx = templateIdx;
+        template = true;
+        editor.load(res => {
+            editor.setComponents(res.components ? JSON.parse(res.components) : res.html);
+            editor.setStyle(res.styles ? JSON.parse(res.styles) : res.css);
+            thumbnail = res.thumbnail || '';
+            mdl.close();
+        });
+    };
+
+    const selectTemplate = e => {
+        templateIdx = e.currentTarget.dataset.idx;
+        $(`.${pfx}templates-card`).each((i, elm) => elm.classList.remove(`${pfx}templates-card-active`));
+        e.currentTarget.parentElement.classList.add(`${pfx}templates-card-active`);
+    };
+
+    const openPage = e => {
+        idx = e.currentTarget.dataset.idx;
+        template = false;
+        editor.load(res => {
+            id = res.id;
+            editor.setComponents(res.components ? JSON.parse(res.components) : res.html);
+            editor.setStyle(res.styles ? JSON.parse(res.styles) : res.css);
+            thumbnail = res.thumbnail || '';
+            mdl.close();
+        });
+    };
+
+    const editName = e => {
+        //? add text to input -> clear text -> show input -> onchange ->
+        //? update name -> set text -> else -> set input value to text
+    };
+
+    const deletePage = e => {
+        editor.Storage.get('indexeddb').delete(options.onDelete, options.onDeleteError);
+        //? hide deleted
+    };
+
     cm.add('open-templates', {
         run(editor, sender) {
             const mdlClass = `${pfx}mdl-dialog-tml`;
@@ -291,33 +344,9 @@ export default (editor, opts = {}) => {
                     mdl.setContent(render(res));
                     $(`.${pfx}templates-card`).each((i, elm) => elm.dataset.idx == templateIdx && elm.classList.add(`${pfx}templates-card-active`));
                     $('#page-name').on('keyup', e => page = e.currentTarget.value)
-                    $('#page-create').on('click', e => {
-                        idx = templateIdx;
-                        template = false;
-                        page && editor.load(res => {
-                            editor.setComponents(res.components ? JSON.parse(res.components) : res.html);
-                            editor.setStyle(res.styles ? JSON.parse(res.styles) : res.css);
-                            thumbnail = res.thumbnail || '';
-                            id = page;
-                            idx = uuidv4();
-                            mdl.close();
-                        });
-                    });
-                    $('#template-edit').on('click', e => {
-                        idx = templateIdx;
-                        template = true;
-                        editor.load(res => {
-                            editor.setComponents(res.components ? JSON.parse(res.components) : res.html);
-                            editor.setStyle(res.styles ? JSON.parse(res.styles) : res.css);
-                            thumbnail = res.thumbnail || '';
-                            mdl.close();
-                        });
-                    });
-                    $(`.${pfx}thumb-select`).on('click', e => {
-                        templateIdx = e.currentTarget.dataset.idx;
-                        $(`.${pfx}templates-card`).each((i, elm) => elm.classList.remove(`${pfx}templates-card-active`));
-                        e.currentTarget.parentElement.classList.add(`${pfx}templates-card-active`);
-                    });
+                    $('#page-create').on('click', () => createPage());
+                    $('#template-edit').on('click', () => openTemplate());
+                    $(`.${pfx}thumb-select`).on('click', e => selectTemplate(e));
                 },
                 err => console.log("Error", err));
             mdl.open();
@@ -338,17 +367,7 @@ export default (editor, opts = {}) => {
             editor.Storage.get('indexeddb').loadAll(res => {
                     mdl.setContent(render(res, false));
                     $(`.${pfx}templates-card`).each((i, elm) => elm.dataset.idx == idx && elm.classList.add(`${pfx}templates-card-active`));
-                    $(`.${pfx}thumb-select`).on('click', e => {
-                        idx = e.currentTarget.dataset.idx;
-                        template = false;
-                        editor.load(res => {
-                            id = res.id;
-                            editor.setComponents(res.components ? JSON.parse(res.components) : res.html);
-                            editor.setStyle(res.styles ? JSON.parse(res.styles) : res.css);
-                            thumbnail = res.thumbnail || '';
-                            mdl.close();
-                        });
-                    });
+                    $(`.${pfx}thumb-select`).on('click', e => openPage(e));
                 },
                 err => console.log("Error", err));
             mdl.open();
@@ -364,7 +383,7 @@ export default (editor, opts = {}) => {
     });
 
     cm.add('delete-from-idb', editor => {
-        editor.Storage.get('indexeddb').delete(res => options.onDelete(res), err => options.onDeleteError(err));
+        editor.Storage.get('indexeddb').delete(options.onDelete, options.onDeleteError);
         editor.Commands.run('open-pages');
     });
 

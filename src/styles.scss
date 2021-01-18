@@ -1,4 +1,13 @@
-.gjs-templates {
+/* Class names prefixes */
+$prefix: 'gjs-' !default;
+
+#page-name {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.#{$prefix}templates {
     position: absolute;
     top: 41px;
     left: 0;
@@ -8,7 +17,7 @@
     z-index: 4;
 }
 
-.gjs-templates-overlay {
+.#{$prefix}templates-overlay {
     position: absolute;
     pointer-events: none;
     top: 0;
@@ -17,32 +26,60 @@
     background-color: rgba(255, 255, 255, 0.05);
 }
 
-.gjs-templates-header2 {
+.#{$prefix}templates-header2 {
     font-size: 1rem;
     font-family: Arial, Helvetica, sans-serif;
     font-weight: lighter;
     margin-top: 10px;
 }
 
-.gjs-templates-header1 {
+.#{$prefix}templates-header1 {
     font-size: 2rem;
     font-family: Arial, Helvetica, sans-serif;
     font-weight: lighter;
     margin-bottom: 10px;
 }
 
-.gjs-templates-cont {
+.#{$prefix}templates-cont {
     margin: 2% 9% 0 9%;
+
+    .#{$prefix}field {
+        width: 75%;
+        display: inline-block;
+    }
+
+    span {
+        display: inline-block;
+    }
 }
 
-.gjs-templates-font {
+.#{$prefix}field-label {
+    font-size: 0.9rem;
+    font-family: Arial, Helvetica, sans-serif;
+    display: block;
+}
+
+.#{$prefix}btn-wide {
+    padding: 10px;
+    border-radius: 3px;
+    font-size: 0.9rem;
+    margin-left: 10px;
+}
+
+.#{$prefix}templates-font {
     font-size: 1rem;
     font-family: Arial, Helvetica, sans-serif;
     font-weight: lighter;
     margin-bottom: 10px;
 }
 
-.gjs-templates-card {
+.#{$prefix}thumbnail-cont {
+    display: flex;
+    height: 219px;
+    overflow: hidden;
+}
+
+.#{$prefix}templates-card {
     width: 32%;
     height: 0;
     padding-bottom: 32%;
@@ -56,14 +93,14 @@
     transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
     background-color: rgba(255, 255, 255, 0.03);
 
-    & svg.template-preview {
+    svg.template-preview {
         margin: 2px;
         background-color: white;
         border: 1px solid white;
         border-radius: 2px;
     }
 
-    & img.template-preview {
+    img.template-preview {
         align-self: center;
         margin: 2px;
         background-color: white;
@@ -72,7 +109,8 @@
         width: 99%;
     }
 
-    & div.label {
+    div.label {
+        position: relative;
         border-top: 1px solid rgba(0, 0, 0, 0.2);
         max-width: 100%;
         font-size: 0.95rem;
@@ -80,6 +118,23 @@
         text-align: center;
         font-weight: lighter;
         padding: 10px;
+
+        i:first-of-type {
+            position: absolute;
+            right: 35px;
+            color: rgb(130, 196, 216);
+        }
+
+        i {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            color: rgb(216, 130, 130);
+            background-color: rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 2px;
+            padding: 3px;
+        }
     }
 
     &:hover {
@@ -92,7 +147,7 @@
     }
 }
 
-.gjs-templates-card-2 {
+.#{$prefix}templates-card-2 {
     display: flex;
     flex-wrap: wrap;
     min-height: 200px;
@@ -119,7 +174,7 @@
     }
 }
 
-.gjs-mdl-dialog-tml {
+.#{$prefix}mdl-dialog-tml {
     max-width: 1000px;
     margin-top: 45px;
 }

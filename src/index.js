@@ -159,7 +159,7 @@ export default (editor, opts = {}) => {
                         template,
                         ...data
                     } = request.result || {};
-                    clb(data);
+                    clb(request.result);
                 };
             });
         },
@@ -258,22 +258,24 @@ export default (editor, opts = {}) => {
                     </div>
                     </foreignObject>
                 </svg>`;
-            const thumbnailEl = el.thumbnail ? `<div class="${pfx}thumbnail-cont">
+            let thumbnailEl = el.thumbnail ? `<div class="${pfx}thumbnail-cont">
                     <img class="template-preview" src="${el.thumbnail}" alt="${el.id}">
-                </div>
-                <div class="label">
+                </div>` : dataSvg;
+            thumbnailEl = `<div class="${pfx}thumb-select" data-idx="${el.idx}">
+                    ${thumbnailEl}
+                </div>`;
+            thumbnailEl += `<div class="label">
                     ${el.id}
-                    <i class="${pfx}caret-icon fa fa-i-cursor"></i>
-                    <i class="${pfx}caret-icon fa fa-trash-o"></i>
-                </div>` :
-                `${dataSvg}<div class="label">
-                    ${el.id} 
-                    <i class="${pfx}caret-icon fa fa-i-cursor"></i>
-                    <i class="${pfx}caret-icon fa fa-trash-o"></i>
+                    <div class="${pfx}field" style="display:none;" >
+                        <input type="text" placeholder="page name" data-idx="${el.idx}">
+                    </div>
+                    <i class="${pfx}caret-icon fa fa-i-cursor" title="rename" data-idx="${el.idx}"></i>
+                    <i class="${pfx}caret-icon fa fa-trash-o" title="delete" data-idx="${el.idx}"></i>
                 </div>`;
             templatesRender ? el.template && (() => thumbnailsEl += thumbs(el.idx, thumbnailEl))() :
                 !el.template && (() => thumbnailsEl += thumbs(el.idx, thumbnailEl))();
         });
+
         return templatesRender ? templates(thumbCont(thumbnailsEl)) : pages(thumbCont(thumbnailsEl))
     };
 
@@ -284,7 +286,7 @@ export default (editor, opts = {}) => {
             mdlDialog.classList.add(mdlClass);
             sender && sender.set && sender.set('active');
             mdl.setTitle(options.templatesMdlTitle);
-            mdl.setContent(options.loaderEl);
+            mdl.setContent($(options.loaderEl));
             editor.Storage.get('indexeddb').loadAll(res => {
                     mdl.setContent(render(res));
                     $(`.${pfx}templates-card`).each((i, elm) => elm.dataset.idx == templateIdx && elm.classList.add(`${pfx}templates-card-active`));
@@ -311,16 +313,15 @@ export default (editor, opts = {}) => {
                             mdl.close();
                         });
                     });
-                    $(`.${pfx}templates-card`).on('click', e => {
+                    $(`.${pfx}thumb-select`).on('click', e => {
                         templateIdx = e.currentTarget.dataset.idx;
                         $(`.${pfx}templates-card`).each((i, elm) => elm.classList.remove(`${pfx}templates-card-active`));
-                        el.classList.add(`${pfx}templates-card-active`);
+                        e.currentTarget.parentElement.classList.add(`${pfx}templates-card-active`);
                     });
                 },
                 err => console.log("Error", err));
             mdl.open();
             mdl.getModel().once('change:open', () => {
-                document.querySelector(`.${pfx}mdl-collector`).innerHTML = "";
                 mdlDialog.classList.remove(mdlClass);
             });
         }
@@ -333,14 +334,15 @@ export default (editor, opts = {}) => {
             mdlDialog.classList.add(mdlClass);
             sender && sender.set && sender && sender.set('active');
             mdl.setTitle(options.pagesMdlTitle);
-            mdl.setContent(options.loaderEl);
+            mdl.setContent($(options.loaderEl));
             editor.Storage.get('indexeddb').loadAll(res => {
                     mdl.setContent(render(res, false));
                     $(`.${pfx}templates-card`).each((i, elm) => elm.dataset.idx == idx && elm.classList.add(`${pfx}templates-card-active`));
-                    $(`.${pfx}templates-card`).on('click', e => {
+                    $(`.${pfx}thumb-select`).on('click', e => {
                         idx = e.currentTarget.dataset.idx;
                         template = false;
                         editor.load(res => {
+                            id = res.id;
                             editor.setComponents(res.components ? JSON.parse(res.components) : res.html);
                             editor.setStyle(res.styles ? JSON.parse(res.styles) : res.css);
                             thumbnail = res.thumbnail || '';
@@ -351,7 +353,6 @@ export default (editor, opts = {}) => {
                 err => console.log("Error", err));
             mdl.open();
             mdl.getModel().once('change:open', () => {
-                document.querySelector(`.${pfx}mdl-collector`).innerHTML = "";
                 mdlDialog.classList.remove(mdlClass);
             });
         }
@@ -404,7 +405,7 @@ export default (editor, opts = {}) => {
             };
             const def = objs.index('id').get(options.defaultPage);
             def.onsuccess = () => {
-                def.result && (idx = def.result.idx);
+                idx = def.result ? def.result.idx : uuidv4();
                 editor.load();
             };
             const temp = objs.index('id').get(options.defaultTemplate);

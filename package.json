@@ -1,6 +1,6 @@
 {
     "name": "grapesjs-indexeddb-ui",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "Grapesjs Indexeddb Ui",
     "main": "dist/grapesjs-indexeddb-ui.min.js",
     "repository": {

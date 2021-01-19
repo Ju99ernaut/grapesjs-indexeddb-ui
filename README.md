@@ -223,7 +223,7 @@ const editor = grapesjs.init({
 
 ## Other Storage types
 
-For usage with other storage types they will need to have the same structure as the [indexeddb](https://github.com/Ju99ernaut/grapesjs-indexeddb-ui/src/index.js) storage. Also add the following options on `init`:
+For usage with other storage types they will need to have the same structure as the [indexeddb](https://github.com/Ju99ernaut/grapesjs-indexeddb-ui/blob/master/src/index.js) storage. Also add the following options on `init`:
 
 ```js
 onload() {

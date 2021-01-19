@@ -168,15 +168,6 @@ Directly in the browser
       plugins: ['grapesjs-indexeddb-ui'],
       pluginsOpts: {
         'grapesjs-indexeddb-ui': { 
-          // Database name
-          dbName: 'gjs',
-
-          // Collection name
-          objectStoreName: 'templates',
-
-          // Indexeddb version schema
-          indexeddbVersion: 4,
-
           // Load on schema upgrade
           addOnUpgrade: [{
               "id": "Template 1",

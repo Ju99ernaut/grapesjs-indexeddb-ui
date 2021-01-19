@@ -102,9 +102,13 @@ body, html {
     * `delete-from-idb`
     * `take-screenshot`
     * `get-current-id`
+    * `get-current-idx`
+    * `get-uuidv4`
 
 ```js
+editor.runCommand('get-current-idx') // Will return uuid of current page
 editor.runCommand('get-current-id') // Will return name/id of current page
+editor.runCommand('get-uuidv4') // Will return a uuid
 ```
 
 > This plugin uses the [`<foreignObject>`](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/foreignObject) [SVG](https://developer.mozilla.org/en-US/docs/Web/SVG) element to simulate thumbnails which works well for projects which do not use any external stylesheets such as bootstrap. If your pages rely on external stylesheets you can store image thumbnails with your pages via the `take-screenshot` command which uses the [dom-to-image](https://github.com/tsayen/dom-to-image) library to generate thumbnails. You can also access this library through `editor.domtoimage`. External images may fail to render due to CORS restrictions.
@@ -117,14 +121,18 @@ editor.runCommand('get-current-id') // Will return name/id of current page
 | `dbName` | DB name | `gjs` |
 | `objectStoreName` | Collection name | `templates` |
 | `indexeddbVersion` | DB version | `4` |
-| `addOnUpgrade` | Add on DB schema upgrade | `0` |
+| `addOnUpgrade` | Add items on DB schema upgrade | `0` |
 | `defaultPage` | Name/ID of the page that is loaded by default on editor restart | `Default` |
 | `defaultTemplate` | Name/ID of the template that is selected by default | `Blank` |
 | `blankTemplate` | Blank page added to templates, pass falsy expression to prevent loading | `{id: 'Blank',template: true,'gjs-html': '','gjs-css': ''}` |
-| `onDelete` | When template or page is deleted | `onDelete: res => console.log('Deleted:', res)` |
-| `onDeleteError` | When error onDelete | `err => console.log(err)` |
-| `onScreenshotError` | Error taking screenshot | `err => console.log(err)` |
+| `onDelete` | When template or page is deleted | `console.log('Deleted:', res)` |
+| `onDeleteError` | When error onDelete | `console.log(err)` |
+| `onScreenshotError` | Error taking screenshot | `console.log(err)` |
 | `quality` | Quality of screenshot image from 0 to 1, more quality increases the image size | `0.01` |
+| `templatesMdlTitle` | Content for templates modal title | `<div style="font-size: 1rem">Create Page</div>` |
+| `pagesMdlTitle` | Content for pages modal title | `<div style="font-size: 1rem">Select Page</div>` |
+| `onload` | Custom onload function used only when storage isn't indexeddb | ` ` |
+| `onedit` | Custom on edit function used to edit the page name if storage isn't indexeddb | ` ` |
 
 
 ## Download
@@ -173,8 +181,8 @@ Directly in the browser
           addOnUpgrade: [{
               "id": "Template 1",
               "template": true,
-              "gjs-html": "html...",
-              "gjs-css": "css...",
+              "gjs-html": "<div id=\"id\">This is demo content...</div>",
+              "gjs-css": "#id{margin:100px 100px 25px; padding:25px; font:caption}",
               "gjs-components": "",
               "gjs-style": ""
             },// Note prefix should be the same as storageManager id in this case 'gjs-'
@@ -213,6 +221,20 @@ const editor = grapesjs.init({
 //Add Panel Buttons
 ```
 
+## Other Storage types
+
+For usage with other storage types they will need to have the same structure as the [indexeddb](https://github.com/Ju99ernaut/grapesjs-indexeddb-ui/src/index.js) storage. Also add the following options on `init`:
+
+```js
+onload() {
+  //add blank template if none
+  //set idx and templateIdx
+},
+
+onedit(idx, name) {
+  //update name of record with idx
+}
+```
 
 
 ## Development

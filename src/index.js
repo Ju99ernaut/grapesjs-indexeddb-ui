@@ -341,7 +341,6 @@ export default (editor, opts = {}) => {
     const deletePage = e => {
         editor.Storage.get('indexeddb').delete(options.onDelete, options.onDeleteError, e.currentTarget.dataset.idx);
         e.currentTarget.parentElement.parentElement.style.display = 'none';
-        //todo clear canvas -> reset to default;
     };
 
     cm.add('open-templates', {

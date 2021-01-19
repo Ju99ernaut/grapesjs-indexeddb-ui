@@ -46,9 +46,6 @@ export default (editor, opts = {}) => {
 
             // Content for pages modal title
             pagesMdlTitle: '<div style="font-size: 1rem">Select Page</div>',
-
-            // Element shown during loading
-            loaderEl: '<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>'
         },
         ...opts
     };
@@ -67,6 +64,7 @@ export default (editor, opts = {}) => {
     const sm = editor.StorageManager;
     const storageName = 'indexeddb';
     const objsName = options.objectStoreName;
+    const loaderEl = '<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>';
 
     const getId = () => sm.getConfig().id || 'gjs-';
     const getCurrentId = () => id;
@@ -188,9 +186,9 @@ export default (editor, opts = {}) => {
             });
         },
 
-        delete(clb, clbErr) {
+        delete(clb, clbErr, index) {
             getAsyncObjectStore(objs => {
-                const request = objs.delete(idx);
+                const request = objs.delete(index || idx);
                 request.onerror = clbErr;
                 request.onsuccess = clb;
             });
@@ -204,12 +202,12 @@ export default (editor, opts = {}) => {
                 ${thumb}
             </div>`;
     };
-    const thumbCont = thumbs => {
+    const thumbsCont = thumbs => {
         return `<div class="${pfx}templates-card-2">
                 ${thumbs}
             </div>`;
     };
-    const templates = thumbCont => {
+    const renderTemplates = () => {
         return `<div id="templates" class="${pfx}templates ${pfx}one-bg ${pfx}two-color">
                 <div class="${pfx}templates-overlay"></div>
                 <div class="${pfx}templates-cont">
@@ -232,25 +230,25 @@ export default (editor, opts = {}) => {
                     <div class="${pfx}templates-header2">
                         Templates
                     </div>
-                    ${thumbCont}
+                    <div id="templates-container"></div>
                 </div>
             </div>`;
     };
-    const pages = thumbCont => {
+    const renderPages = () => {
         return `<div id="pages" class="${pfx}templates ${pfx}one-bg ${pfx}two-color">
             <div class="${pfx}templates-overlay"></div>
             <div class="${pfx}templates-cont">
                 <div class="${pfx}templates-header2">
-                Your Pages
+                    Your Pages
                 </div>
-                    ${thumbCont}
-                </div>
-            </div>`;
+                <div id="pages-container"></div>
+            </div>
+        </div>`;
     };
 
-    const render = (data, templatesRender = true) => {
-        //TODO refactor render function
+    const update = (data) => {
         let thumbnailsEl = '';
+
         data.forEach(el => {
             const dataSvg = `<svg xmlns="http://www.w3.org/2000/svg" class="template-preview" viewBox="0 0 1300 1100" width="99%" height="220">
                     <foreignObject width="100%" height="100%" style="pointer-events:none">
@@ -264,20 +262,20 @@ export default (editor, opts = {}) => {
                 </div>` : dataSvg;
             thumbnailEl = `<div class="${pfx}thumb-select" data-idx="${el.idx}">
                     ${thumbnailEl}
-                </div>`;
-            thumbnailEl += `<div class="label">
-                    ${el.id}
+                </div>
+                <div class="label">
+                    <div>${el.id}</div>
                     <div class="${pfx}field" style="display:none;" >
                         <input type="text" placeholder="page name" data-idx="${el.idx}">
                     </div>
                     <i class="${pfx}caret-icon fa fa-i-cursor" title="rename" data-idx="${el.idx}"></i>
                     <i class="${pfx}caret-icon fa fa-trash-o" title="delete" data-idx="${el.idx}"></i>
                 </div>`;
-            templatesRender ? el.template && (() => thumbnailsEl += thumbs(el.idx, thumbnailEl))() :
-                !el.template && (() => thumbnailsEl += thumbs(el.idx, thumbnailEl))();
+
+            thumbnailsEl += thumbs(el.idx, thumbnailEl);
         });
 
-        return templatesRender ? templates(thumbCont(thumbnailsEl)) : pages(thumbCont(thumbnailsEl))
+        return thumbsCont(thumbnailsEl);
     };
 
     const createPage = () => {
@@ -323,13 +321,27 @@ export default (editor, opts = {}) => {
     };
 
     const editName = e => {
-        //? add text to input -> clear text -> show input -> onchange ->
-        //? update name -> set text -> else -> set input value to text
+        const $el = $(e.currentTarget.parentElement);
+        const lbl = $el.children().first();
+        const inputCont = $el.find(`.${pfx}field`);
+        const input = inputCont.find('input');
+        if (inputCont.get(0).style.display === 'block') {
+            lbl.text(input.val());
+            inputCont.hide();
+            getAsyncObjectStore(objs => {
+                objs.put({ idx: e.currentTarget.dataset.idx, id: input.val() });
+            });
+        } else {
+            input.val(lbl.text().trim());
+            lbl.text('\\');
+            inputCont.show();
+        }
     };
 
     const deletePage = e => {
-        editor.Storage.get('indexeddb').delete(options.onDelete, options.onDeleteError);
-        //? hide deleted
+        editor.Storage.get('indexeddb').delete(options.onDelete, options.onDeleteError, e.currentTarget.dataset.idx);
+        e.currentTarget.parentElement.parentElement.style.display = 'none';
+        //todo clear canvas -> reset to default;
     };
 
     cm.add('open-templates', {
@@ -339,14 +351,19 @@ export default (editor, opts = {}) => {
             mdlDialog.classList.add(mdlClass);
             sender && sender.set && sender.set('active');
             mdl.setTitle(options.templatesMdlTitle);
-            mdl.setContent($(options.loaderEl));
+            mdl.setContent($('.lds-ellipsis').length ? $('.lds-ellipsis') : loaderEl);
             editor.Storage.get('indexeddb').loadAll(res => {
-                    mdl.setContent(render(res));
-                    $(`.${pfx}templates-card`).each((i, elm) => elm.dataset.idx == templateIdx && elm.classList.add(`${pfx}templates-card-active`));
-                    $('#page-name').on('keyup', e => page = e.currentTarget.value)
-                    $('#page-create').on('click', () => createPage());
-                    $('#template-edit').on('click', () => openTemplate());
-                    $(`.${pfx}thumb-select`).on('click', e => selectTemplate(e));
+                    let content = $('#templates');
+                    content = content.length ? content : $(renderTemplates());
+                    mdl.setContent(content);
+                    content.find('#templates-container').html(update(res.filter(r => r.template)));
+                    content.find(`.${pfx}templates-card`).each((i, elm) => elm.dataset.idx == templateIdx && elm.classList.add(`${pfx}templates-card-active`));
+                    content.find('#page-name').on('keyup', e => page = e.currentTarget.value)
+                    content.find('#page-create').on('click', () => createPage());
+                    content.find('#template-edit').on('click', () => openTemplate());
+                    content.find(`.${pfx}thumb-select`).on('click', e => selectTemplate(e));
+                    content.find('i.fa.fa-i-cursor').on('click', e => editName(e));
+                    content.find('i.fa.fa-trash-o').on('click', e => deletePage(e));
                 },
                 err => console.log("Error", err));
             mdl.open();
@@ -363,11 +380,16 @@ export default (editor, opts = {}) => {
             mdlDialog.classList.add(mdlClass);
             sender && sender.set && sender && sender.set('active');
             mdl.setTitle(options.pagesMdlTitle);
-            mdl.setContent($(options.loaderEl));
+            mdl.setContent($('.lds-ellipsis').length ? $('.lds-ellipsis') : loaderEl);
             editor.Storage.get('indexeddb').loadAll(res => {
-                    mdl.setContent(render(res, false));
-                    $(`.${pfx}templates-card`).each((i, elm) => elm.dataset.idx == idx && elm.classList.add(`${pfx}templates-card-active`));
-                    $(`.${pfx}thumb-select`).on('click', e => openPage(e));
+                    let content = $('#pages');
+                    content = content.length ? content : $(renderPages());
+                    mdl.setContent(content);
+                    content.find('#pages-container').html(update(res.filter(r => !r.template)));
+                    content.find(`.${pfx}templates-card`).each((i, elm) => elm.dataset.idx == idx && elm.classList.add(`${pfx}templates-card-active`));
+                    content.find(`.${pfx}thumb-select`).on('click', e => openPage(e));
+                    content.find('i.fa.fa-i-cursor').on('click', e => editName(e));
+                    content.find('i.fa.fa-trash-o').on('click', e => deletePage(e));
                 },
                 err => console.log("Error", err));
             mdl.open();

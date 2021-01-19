@@ -30,13 +30,19 @@ export default (editor, opts = {}) => {
             },
 
             // When template or page is deleted
-            onDelete: res => console.log('Deleted:', res),
+            onDelete(res) {
+                console.log('Deleted:', res)
+            },
 
             // When error onDelete
-            onDeleteError: err => console.log(err),
+            onDeleteError(err) {
+                console.log(err)
+            },
 
             // On screenshot error
-            onScreenshotError: err => console.log(err),
+            onScreenshotError(err) {
+                console.log(err)
+            },
 
             // Quality of screenshot image from 0 to 1, more quality increases the image size
             quality: .005,
@@ -46,6 +52,12 @@ export default (editor, opts = {}) => {
 
             // Content for pages modal title
             pagesMdlTitle: '<div style="font-size: 1rem">Select Page</div>',
+
+            // Custom onload function used only when storage isn't indexeddb
+            onload() {},
+
+            // Custom on edit function used to edit the page name if storage isn't indexeddb
+            onedit() {}
         },
         ...opts
     };
@@ -328,19 +340,26 @@ export default (editor, opts = {}) => {
         if (inputCont.get(0).style.display === 'block') {
             lbl.text(input.val());
             inputCont.hide();
-            getAsyncObjectStore(objs => {
-                objs.put({ idx: e.currentTarget.dataset.idx, id: input.val() });
-            });
+            if (sm.getCurrent() === 'indexeddb') {
+                getAsyncObjectStore(objs => {
+                    objs.put({ idx: e.currentTarget.dataset.idx, id: input.val() });
+                })
+            } else {
+                options.onedit && $.isFunction(options.onedit) &&
+                    options.onedit(e.currentTarget.dataset.idx, input.val())
+            }
         } else {
             input.val(lbl.text().trim());
-            lbl.text('\\');
+            lbl.text('...');
             inputCont.show();
         }
     };
 
     const deletePage = e => {
-        editor.Storage.get('indexeddb').delete(options.onDelete, options.onDeleteError, e.currentTarget.dataset.idx);
-        e.currentTarget.parentElement.parentElement.style.display = 'none';
+        sm.get(sm.getCurrent())
+            .delete(options.onDelete, options.onDeleteError, e.currentTarget.dataset.idx);
+        e.currentTarget.parentElement
+            .parentElement.style.display = 'none';
     };
 
     cm.add('open-templates', {
@@ -351,12 +370,16 @@ export default (editor, opts = {}) => {
             sender && sender.set && sender.set('active');
             mdl.setTitle(options.templatesMdlTitle);
             mdl.setContent($('.lds-ellipsis').length ? $('.lds-ellipsis') : loaderEl);
-            editor.Storage.get('indexeddb').loadAll(res => {
+            sm.get(sm.getCurrent()).loadAll(res => {
                     let content = $('#templates');
                     content = content.length ? content : $(renderTemplates());
                     mdl.setContent(content);
                     content.find('#templates-container').html(update(res.filter(r => r.template)));
-                    content.find(`.${pfx}templates-card`).each((i, elm) => elm.dataset.idx == templateIdx && elm.classList.add(`${pfx}templates-card-active`));
+                    content.find(`.${pfx}templates-card`)
+                        .filter((i, elm) => elm.getAttribute('data-idx') == templateIdx)
+                        .addClass(`${pfx}templates-card-active`)
+                        .find('i.fa')
+                        .hide();
                     content.find('#page-name').on('keyup', e => page = e.currentTarget.value)
                     content.find('#page-create').on('click', () => createPage());
                     content.find('#template-edit').on('click', () => openTemplate());
@@ -380,12 +403,16 @@ export default (editor, opts = {}) => {
             sender && sender.set && sender && sender.set('active');
             mdl.setTitle(options.pagesMdlTitle);
             mdl.setContent($('.lds-ellipsis').length ? $('.lds-ellipsis') : loaderEl);
-            editor.Storage.get('indexeddb').loadAll(res => {
+            sm.get(sm.getCurrent()).loadAll(res => {
                     let content = $('#pages');
                     content = content.length ? content : $(renderPages());
                     mdl.setContent(content);
                     content.find('#pages-container').html(update(res.filter(r => !r.template)));
-                    content.find(`.${pfx}templates-card`).each((i, elm) => elm.dataset.idx == idx && elm.classList.add(`${pfx}templates-card-active`));
+                    content.find(`.${pfx}templates-card`)
+                        .filter((i, elm) => elm.getAttribute('data-idx') == idx)
+                        .addClass(`${pfx}templates-card-active`)
+                        .find('i.fa')
+                        .hide();
                     content.find(`.${pfx}thumb-select`).on('click', e => openPage(e));
                     content.find('i.fa.fa-i-cursor').on('click', e => editName(e));
                     content.find('i.fa.fa-trash-o').on('click', e => deletePage(e));
@@ -404,7 +431,8 @@ export default (editor, opts = {}) => {
     });
 
     cm.add('delete-from-idb', editor => {
-        editor.Storage.get('indexeddb').delete(options.onDelete, options.onDeleteError);
+        sm.get(sm.getCurrent())
+            .delete(options.onDelete, options.onDeleteError);
         editor.Commands.run('open-pages');
     });
 
@@ -437,21 +465,25 @@ export default (editor, opts = {}) => {
 
     editor.on('load', () => {
         // Create blank template if requested and none exists
-        options.blankTemplate && getAsyncObjectStore(objs => {
-            const blank = objs.index('id').get(options.blankTemplate.id);
-            //request.onerror = clbErr;
-            blank.onsuccess = () => {
-                !blank.result && objs.put({ idx: uuidv4(), ...options.blankTemplate });
-            };
-            const def = objs.index('id').get(options.defaultPage);
-            def.onsuccess = () => {
-                idx = def.result ? def.result.idx : uuidv4();
-                editor.load();
-            };
-            const temp = objs.index('id').get(options.defaultTemplate);
-            temp.onsuccess = () => {
-                temp.result && (templateIdx = def.result.idx);
-            }
-        });
+        if (sm.getCurrent() === 'indexeddb') {
+            options.blankTemplate && getAsyncObjectStore(objs => {
+                const blank = objs.index('id').get(options.blankTemplate.id);
+                //request.onerror = clbErr;
+                blank.onsuccess = () => {
+                    !blank.result && objs.put({ idx: uuidv4(), ...options.blankTemplate });
+                };
+                const def = objs.index('id').get(options.defaultPage);
+                def.onsuccess = () => {
+                    idx = def.result ? def.result.idx : uuidv4();
+                    editor.load();
+                };
+                const temp = objs.index('id').get(options.defaultTemplate);
+                temp.onsuccess = () => {
+                    temp.result && (templateIdx = def.result.idx);
+                }
+            });
+        } else {
+            options.onload && $.isFunction(options.onload) && options.onload();
+        }
     });
 };

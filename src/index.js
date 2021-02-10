@@ -450,7 +450,8 @@ export default (editor, opts = {}) => {
             height: 1000,
             'cacheBust': true,
             style: {
-                'background-color': el.style.backgroundColor || 'white',
+                'background-color': 'white',
+                ...editor.getWrapper().getStyle()
             },
         }, clb, clbErr);
     });

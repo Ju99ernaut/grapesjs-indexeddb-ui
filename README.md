@@ -1,6 +1,8 @@
 # Grapesjs Indexeddb UI
 
-UI helpers for IndexedDB Storage
+UI helpers for IndexedDB Storage.
+
+This repo has been deprecated in favour of [grapesjs-template-manager](https://github.com/Ju99ernaut/grapesjs-template-manager) and will only be updated for bug fixes. There won't be any new features added.
 
 >Requires GrapesJS v0.14.15 or higher
 
